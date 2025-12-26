@@ -1,96 +1,78 @@
-.smart-chef-container { max-width: 1100px; margin: 0 auto; padding: 20px; font-family: 'Segoe UI', sans-serif; }
-.chef-header { text-align: center; margin-bottom: 30px; }
-
-/* --- INPUT FORM --- */
-.chef-form { background: #f8f9fa; padding: 20px; border-radius: 12px; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-.chef-form textarea { padding: 12px; border-radius: 8px; border: 1px solid #ddd; min-height: 80px; font-family: inherit; }
-.form-actions { display: flex; gap: 10px; }
-.form-actions button { flex: 2; background: #ff6b6b; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
-.form-actions button:hover { background: #ee5253; }
-.form-actions select { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ddd; }
-
-/* --- RECIPE GRID --- */
-.cards-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; margin-top: 20px; }
-.recipe-preview-card { background: white; border: 1px solid #eee; border-radius: 12px; padding: 20px; cursor: pointer; transition: transform 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
-.recipe-preview-card:hover { transform: translateY(-5px); border-color: #ff6b6b; }
-
-.badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; margin-bottom: 10px; }
-.badge-ai { background: #dff9fb; color: #00cec9; }
-.badge-db { background: #fff4e6; color: #e17055; }
-
-.missing-alert { background: #fff0f0; color: #d63031; padding: 8px; border-radius: 6px; font-size: 0.85rem; margin: 10px 0; }
-.match-alert { background: #e6fffa; color: #00b894; padding: 8px; border-radius: 6px; font-size: 0.85rem; margin: 10px 0; font-weight: bold; }
-
-.view-btn { width: 100%; padding: 8px; border: 1px solid #ff6b6b; color: #ff6b6b; background: transparent; border-radius: 6px; cursor: pointer; margin-top: 10px; }
-
-/* --- DETAIL SPLIT VIEW --- */
-.recipe-detail-wrapper { animation: fadeIn 0.3s; margin-top: 20px; }
-.detail-split-layout { display: flex; gap: 20px; height: 600px; }
-
-/* LEFT: Recipe Content */
-.recipe-content-panel { flex: 2; overflow-y: auto; border: 1px solid #eee; border-radius: 12px; display: flex; flex-direction: column; }
-.recipe-header { background: #2d3436; color: white; padding: 20px; text-align: center; }
-.recipe-meta { display: flex; justify-content: center; gap: 20px; margin-top: 10px; color: #dfe6e9; font-size: 0.9rem; }
-.recipe-desc { font-style: italic; opacity: 0.9; margin-top: 10px; font-size: 0.95rem; }
-
-.recipe-body { display: flex; padding: 20px; gap: 20px; }
-.ingredients { flex: 1; border-right: 1px solid #eee; padding-right: 15px; }
-.instructions { flex: 1.5; }
-.missing-title { color: #d63031; border-bottom: 1px solid #fab1a0; margin-top: 20px; padding-bottom: 5px; }
-
-/* RIGHT: Chat Panel */
-.chat-panel { flex: 1; display: flex; flex-direction: column; border: 1px solid #ddd; border-radius: 12px; background: white; overflow: hidden; }
-.chat-header { background: #636e72; color: white; padding: 15px; text-align: center; }
-.chat-header h3 { margin: 0; font-size: 1rem; }
-.chat-header p { margin: 0; font-size: 0.8rem; opacity: 0.8; }
-
-.chat-window { flex: 1; background: #f1f2f6; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-.chat-placeholder { text-align: center; color: #aaa; margin-top: 40px; font-style: italic; display: flex; flex-direction: column; gap: 5px; }
-
-.chat-bubble { max-width: 85%; padding: 10px; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; }
-.chat-bubble.user { align-self: flex-end; background: #ff6b6b; color: white; border-bottom-right-radius: 2px; }
-.chat-bubble.assistant { align-self: flex-start; background: white; color: #333; border: 1px solid #ddd; border-bottom-left-radius: 2px; }
-
-.chat-input-area { display: flex; padding: 10px; background: white; border-top: 1px solid #ddd; }
-.chat-input-area input { flex: 1; padding: 8px 15px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
-.chat-input-area button { background: none; border: none; color: #ff6b6b; font-size: 1.2rem; cursor: pointer; margin-left: 10px; }
-
-.back-btn { background: none; border: none; cursor: pointer; font-size: 1rem; color: #636e72; margin-bottom: 10px; }
-
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-/* Mobile Responsive */
-@media (max-width: 768px) {
-  .detail-split-layout { flex-direction: column; height: auto; }
-  .recipe-content-panel { max-height: 500px; }
-  .chat-panel { height: 400px; }
-  .recipe-body { flex-direction: column; }
-  .ingredients { border-right: none; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+.smart-chef-container {
+  max-width: 1100px;
+  margin: 100px auto 50px;
+  padding: 0 20px;
+  font-family: 'Inter', sans-serif;
 }
+.hero-section { text-align: center; margin-bottom: 40px; }
+.hero-section h1 { font-size: 2.8rem; font-weight: 800; margin-bottom: 10px; color: #2d3436; }
+.hero-section p { font-size: 1.2rem; color: #636e72; }
+.gradient-text { background: linear-gradient(135deg, #6C5CE7 0%, #FF7675 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 
-/* Add to existing SmartChef.css */
-
-.save-btn {
-  background-color: #ff7675;
-  color: white;
-  border: none;
-  padding: 8px 20px;
-  border-radius: 20px;
-  margin-top: 15px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+/* COMMAND CENTER (Unified Search Bar) */
+.command-center {
+  background: white; padding: 15px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  max-width: 650px; margin: 0 auto 50px; border: 1px solid #f0f0f0;
 }
-
-.save-btn:hover {
-  background-color: #d63031;
-  transform: translateY(-2px);
+.input-container { position: relative; margin-bottom: 15px; }
+textarea {
+  width: 100%;
+  /* FIX: This ensures padding doesn't make the box wider than 100% */
+  box-sizing: border-box; 
+  
+  border: 2px solid #f1f2f6;
+  background-color: #f8f9fa;
+  border-radius: 16px;
+  padding: 15px 50px 15px 15px;
+  font-family: inherit;
+  font-size: 1rem;
+  min-height: 60px;
+  resize: none;
+  transition: all 0.2s;
 }
+textarea:focus { background-color: white; border-color: #6C5CE7; outline: none; box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.1); }
+.input-actions { position: absolute; bottom: 15px; right: 15px; z-index: 10; }
+.icon-trigger { color: #636e72; cursor: pointer; padding: 8px; border-radius: 50%; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+.icon-trigger:hover { background-color: #e0dcfc; color: #6C5CE7; transform: scale(1.1); }
+.full-width { width: 100%; justify-content: center; padding: 14px; font-size: 1.05rem; }
+.generate-btn { background: #6C5CE7; color: white; border-radius: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: transform 0.2s; }
+.generate-btn:hover { background: #5649c0; transform: translateY(-2px); }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
 
-.save-btn:disabled {
-  background-color: #fab1a0;
-  cursor: not-allowed;
-  transform: none;
+/* RESULTS & DETAIL Styles (Keep existing ones) */
+.results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+.recipe-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s ease; border: 1px solid #f5f5f5; position: relative; }
+.recipe-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+.card-image-placeholder { height: 140px; background: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%); }
+.card-badge { position: absolute; top: 12px; right: 12px; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: white; display: flex; gap: 5px; z-index: 2; }
+.card-badge.ai { background: linear-gradient(45deg, #FF9A9E, #FECFEF); color: #d63031; }
+.card-badge.db { background: rgba(0,0,0,0.6); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+.card-content { padding: 20px; }
+.missing-pill { font-size: 0.8rem; color: #e17055; background: #ffeaa7; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 10px; }
+.ready-pill { font-size: 0.8rem; color: #00b894; background: #dff9fb; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 10px; }
+.card-meta { display: flex; gap: 15px; font-size: 0.9rem; color: #636e72; }
+
+/* DETAIL VIEW */
+.split-layout { display: grid; grid-template-columns: 1.6fr 1fr; gap: 30px; min-height: 600px; margin-top: 20px; }
+.recipe-panel, .chat-panel { background: white; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+.recipe-panel { padding: 40px; }
+.chat-panel { border: 1px solid #eee; display: flex; flex-direction: column; height: 600px; overflow: hidden; }
+.chat-header-bar { padding: 15px 20px; background: #f8f9fa; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+.chat-window { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.chat-input-area { padding: 15px; border-top: 1px solid #eee; display: flex; gap: 10px; }
+.chat-input-area input { flex: 1; padding: 10px; border: 1px solid #eee; border-radius: 8px; }
+.chat-input-area button { background: #6C5CE7; color: white; padding: 0 15px; border-radius: 8px; }
+.save-btn { background: #ff7675; color: white; padding: 8px 16px; border-radius: 20px; font-weight: 600; display: flex; gap: 6px; align-items: center; }
+.stats-row { display: flex; gap: 15px; margin-bottom: 20px; }
+.stat { background: #f1f2f6; padding: 6px 12px; border-radius: 8px; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; color: #636e72; }
+.chat-bubble { padding: 10px 15px; border-radius: 12px; max-width: 85%; font-size: 0.95rem; }
+.chat-bubble.user { background: #6C5CE7; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+.chat-bubble.assistant { background: #f1f2f6; color: #2d3436; align-self: flex-start; border-bottom-left-radius: 2px; }
+
+/* MOBILE */
+@media (max-width: 900px) {
+  .split-layout { grid-template-columns: 1fr; height: auto; }
+  .chat-panel { height: 500px; margin-top: 20px; }
+  .smart-chef-container { margin-top: 80px; }
 }

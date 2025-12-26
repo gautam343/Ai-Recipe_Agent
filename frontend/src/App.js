@@ -1,48 +1,30 @@
-import React, { useState } from 'react';
-import RecipeList from './components/RecipeList';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast'; // Import Toaster
+import Navbar from './components/Navbar';
+import Home from './components/Home';
 import SmartChef from './components/SmartChef';
-import './App.css'; 
+import RecipeList from './components/RecipeList';
+import './App.css';
 
 function App() {
-  const [view, setView] = useState('landing'); // 'landing', 'browse', 'chef'
-
   return (
-    <div className="app-container" style={{ justifyContent: view === 'landing' ? 'center' : 'flex-start' }}>
-      
-      {/* Header (Always visible unless on landing) */}
-      {view !== 'landing' && (
-        <div className="nav-header">
-           <h2 onClick={() => setView('landing')} style={{cursor: 'pointer'}}>Nebula9 🚀</h2>
-           <button onClick={() => setView('browse')}>Browse All</button>
-           <button onClick={() => setView('chef')}>Smart Chef</button>
+    <Router>
+      <div className="app-container">
+        {/* The Toaster enables the popups to show anywhere in the app */}
+        <Toaster position="bottom-center" toastOptions={{ duration: 3000 }} />
+        
+        <Navbar />
+        
+        <div className="content-area">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/chef" element={<SmartChef />} />
+            <Route path="/browse" element={<RecipeList />} />
+          </Routes>
         </div>
-      )}
-
-      {/* VIEW 1: Landing Page */}
-      {view === 'landing' && (
-        <div className="landing-content">
-          <h1 className="title">Nebula9 Recipe App 🚀</h1>
-          <p className="subtitle">AI-Powered Meal Planning made simple.</p>
-          
-          <div className="button-group">
-            <button className="search-btn" onClick={() => setView('browse')}>
-              📖 Browse Recipes
-            </button>
-            <div style={{width: '20px', display:'inline-block'}}></div>
-            <button className="search-btn" style={{background: '#7c3aed'}} onClick={() => setView('chef')}>
-              👨‍🍳 Ask AI Chef
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* VIEW 2: Browse All */}
-      {view === 'browse' && <RecipeList />}
-
-      {/* VIEW 3: Smart Chef */}
-      {view === 'chef' && <SmartChef />}
-
-    </div>
+      </div>
+    </Router>
   );
 }
 

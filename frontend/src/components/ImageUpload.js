@@ -1,21 +1,16 @@
 import React, { useState } from 'react';
+import { Camera, Loader2 } from 'lucide-react';
 import './ImageUpload.css';
 
 const ImageUpload = ({ onIngredientsFound }) => {
   const [uploading, setUploading] = useState(false);
-  const [previews, setPreviews] = useState([]); // Array for multiple previews
 
   const handleFileChange = async (e) => {
-    const files = Array.from(e.target.files); // Convert FileList to Array
+    const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
     setUploading(true);
 
-    // 1. Generate Previews immediately
-    const newPreviews = files.map(file => URL.createObjectURL(file));
-    setPreviews(prev => [...prev, ...newPreviews]);
-
-    // 2. Process each image sequentially
     for (const file of files) {
       const formData = new FormData();
       formData.append('image', file);
@@ -29,28 +24,22 @@ const ImageUpload = ({ onIngredientsFound }) => {
         const data = await res.json();
         
         if (data.ingredients) {
-          console.log(`✅ Detected in ${file.name}:`, data.ingredients);
-          // Send to SmartChef immediately after detection
           onIngredientsFound(data.ingredients);
         }
       } catch (error) {
-        console.error(`❌ Failed to analyze ${file.name}`, error);
+        console.error(`Failed to analyze ${file.name}`, error);
       }
     }
-
-    setUploading(false);
     
-    // Clear file input so you can upload the same file again if needed
+    setUploading(false);
     e.target.value = ''; 
   };
 
   return (
-    <div className="image-upload-container">
-      <label htmlFor="camera-upload" className={`upload-btn ${uploading ? 'disabled' : ''}`}>
-        {uploading ? '👀 Analyzing...' : '📸 Snap Ingredients (Multi)'}
+    <div className="image-upload-wrapper">
+      <label htmlFor="camera-upload" className="icon-trigger" title="Snap Ingredients">
+        {uploading ? <Loader2 className="spin" size={20}/> : <Camera size={22} />}
       </label>
-      
-      {/* ADDED: "multiple" attribute */}
       <input 
         id="camera-upload" 
         type="file" 
@@ -60,13 +49,6 @@ const ImageUpload = ({ onIngredientsFound }) => {
         disabled={uploading}
         style={{ display: 'none' }} 
       />
-
-      {/* Render list of previews */}
-      <div className="preview-list">
-        {previews.map((src, index) => (
-          <img key={index} src={src} alt="Ingredient" className="mini-preview fade-in" />
-        ))}
-      </div>
     </div>
   );
 };

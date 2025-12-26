@@ -1,15 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Send, Loader2, Sparkles, ChefHat, Flame, Clock, 
+  Save, BookOpen, ArrowLeft, CheckCircle, AlertTriangle 
+} from 'lucide-react';
+import toast from 'react-hot-toast'; 
 import ImageUpload from './ImageUpload';
 import './SmartChef.css';
 
 const SmartChef = () => {
-  // --- STATE ---
   const [ingredients, setIngredients] = useState('');
   const [recipeOptions, setRecipeOptions] = useState([]);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [saving, setSaving] = useState(false); // NEW: Saving state
+  const [saving, setSaving] = useState(false);
 
   // Chat State
   const [chatInput, setChatInput] = useState('');
@@ -21,39 +26,43 @@ const SmartChef = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatHistory]);
 
-  // --- HANDLERS ---
   const handleImageIngredients = (detectedIngredients) => {
     setIngredients((prev) => 
       prev.trim() ? `${prev}, ${detectedIngredients}` : detectedIngredients
     );
+    toast.success("Ingredients detected! 🍅");
   };
 
   const handleGenerate = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!ingredients.trim()) return;
+
     setLoading(true);
     setError('');
     setRecipeOptions([]);
     setSelectedRecipe(null);
-    setChatHistory([]); 
+    setChatHistory([]);
 
     try {
       const res = await fetch('http://localhost:5000/api/generate-recipe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ingredients: ingredients.split(',').map(i => i.trim()) }),
+        body: JSON.stringify({ 
+          ingredients: ingredients.split(',').map(i => i.trim()) 
+        }),
       });
-      if (!res.ok) throw new Error('Failed to fetch recipes');
+
+      if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
       setRecipeOptions(data);
     } catch (err) {
       setError('The Chef is confused. Please try again.');
+      toast.error("Chef couldn't find recipes. Try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // NEW: Save Handler
   const handleSave = async () => {
     if (!selectedRecipe) return;
     setSaving(true);
@@ -65,10 +74,9 @@ const SmartChef = () => {
       });
       
       if (!res.ok) throw new Error('Save failed');
-      alert("Recipe Saved! Check 'Browse All' to see it.");
+      toast.success("Recipe Saved to Cookbook! 📖");
     } catch (err) {
-      alert("Failed to save recipe. Is the database running?");
-      console.error(err);
+      toast.error("Failed to save recipe.");
     } finally {
       setSaving(false);
     }
@@ -77,7 +85,6 @@ const SmartChef = () => {
   const handleChatSubmit = async (e) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
-
     const userMsg = { role: 'user', content: chatInput };
     setChatHistory(prev => [...prev, userMsg]);
     setChatInput('');
@@ -96,162 +103,153 @@ const SmartChef = () => {
       const data = await res.json();
       setChatHistory(prev => [...prev, { role: 'assistant', content: data.answer }]);
     } catch (err) {
-      setChatHistory(prev => [...prev, { role: 'assistant', content: "Sorry, I can't answer that right now." }]);
+      setChatHistory(prev => [...prev, { role: 'assistant', content: "Sorry, I can't answer right now." }]);
     } finally {
       setIsChatting(false);
     }
   };
 
-  // --- VIEWS ---
-  const renderRecipeList = () => (
-    <div className="recipe-grid fade-in">
-      <h3>Found {recipeOptions.length} Options for You:</h3>
-      <div className="cards-container">
-        {recipeOptions.map((recipe) => (
-          <div key={recipe.id} className="recipe-preview-card" onClick={() => { setSelectedRecipe(recipe); setChatHistory([]); }}>
-            <div className={`badge ${recipe.is_ai ? 'badge-ai' : 'badge-db'}`}>
-              {recipe.source}
-            </div>
-            <h4>{recipe.title}</h4>
-            
-            {!recipe.is_ai && recipe.missing_ingredients.length > 0 ? (
-              <div className="missing-alert">
-                <strong>Missing {recipe.missing_ingredients.length} items:</strong>
-                <p>{recipe.missing_ingredients.slice(0, 3).join(', ')}...</p>
-              </div>
-            ) : (
-              <div className="match-alert">✅ Ready to Cook!</div>
-            )}
-
-            <div className="preview-meta">
-              <span>⏱️ {recipe.time_minutes}m</span>
-              <span>🔥 {recipe.calories}</span>
-            </div>
-            <button className="view-btn">View Recipe &rarr;</button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
   const renderDetailView = () => (
-    <div className="recipe-detail-wrapper fade-in">
-      <button className="back-btn" onClick={() => setSelectedRecipe(null)}>&larr; Back to Options</button>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+      className="detail-view"
+    >
+      <button className="back-btn" onClick={() => setSelectedRecipe(null)}>
+        <ArrowLeft size={18} /> Back to Results
+      </button>
       
-      <div className="detail-split-layout">
-        <div className="recipe-content-panel">
-          <div className="recipe-header">
-            <h2>{selectedRecipe.title}</h2>
-            
-            {/* NEW: Save Button (Only for AI recipes that aren't saved yet) */}
-            {selectedRecipe.is_ai && (
-              <button 
-                onClick={handleSave} 
-                className="save-btn" 
-                disabled={saving}
-              >
-                {saving ? 'Saving...' : '❤️ Save to Cookbook'}
-              </button>
-            )}
-
-            <div className="recipe-meta">
-              <span>⏱️ {selectedRecipe.time_minutes} mins</span>
-              <span>🔥 {selectedRecipe.calories} kcal</span>
-              <span>📊 {selectedRecipe.difficulty}</span>
+      <div className="split-layout">
+        <div className="recipe-panel">
+          <div className="panel-header">
+            <div className="header-top">
+              <h2>{selectedRecipe.title}</h2>
+              {selectedRecipe.is_ai && (
+                <button onClick={handleSave} className="save-btn" disabled={saving}>
+                  <Save size={16} /> {saving ? 'Saving...' : 'Save'}
+                </button>
+              )}
             </div>
-            <p className="recipe-desc">{selectedRecipe.description}</p>
+            <div className="stats-row">
+              <span className="stat"><Clock size={16} /> {selectedRecipe.time_minutes} min</span>
+              <span className="stat"><Flame size={16} /> {selectedRecipe.calories} kcal</span>
+              <span className="stat badge">{selectedRecipe.difficulty}</span>
+            </div>
+            <p className="desc">{selectedRecipe.description}</p>
           </div>
 
           <div className="recipe-body">
-            <div className="ingredients">
-              <h3>🛒 Ingredients</h3>
-              <ul className="used-list">
+            <div className="section">
+              <h3><BookOpen size={18} /> Ingredients</h3>
+              <ul className="ingredient-list">
                 {selectedRecipe.ingredients_used.map((ing, i) => (
-                  <li key={i}>✅ {ing}</li>
+                  <li key={i} className="found"><CheckCircle size={14} /> {ing}</li>
+                ))}
+                {selectedRecipe.missing_ingredients.map((ing, i) => (
+                  <li key={i} className="missing"><AlertTriangle size={14} /> {ing}</li>
                 ))}
               </ul>
-              {selectedRecipe.missing_ingredients.length > 0 && (
-                <>
-                  <h4 className="missing-title">⚠️ You Need:</h4>
-                  <ul className="missing-list">
-                    {selectedRecipe.missing_ingredients.map((ing, i) => (
-                      <li key={i}>❌ {ing}</li>
-                    ))}
-                  </ul>
-                </>
-              )}
             </div>
-
-            <div className="instructions">
-              <h3>📝 Instructions</h3>
-              <ol>
+            <div className="section">
+              <h3><ChefHat size={18} /> Instructions</h3>
+              <ol className="instruction-list">
                 {selectedRecipe.instructions.map((step, i) => <li key={i}>{step}</li>)}
               </ol>
             </div>
           </div>
         </div>
 
-        {/* Chat Panel */}
         <div className="chat-panel">
-          <div className="chat-header">
-            <h3>💬 Chef Assistant</h3>
-            <p>Ask about specific steps or subs!</p>
+          <div className="chat-header-bar">
+            <h3><Sparkles size={18} /> Chef Assistant</h3>
+            <span className="status-dot"></span>
           </div>
           <div className="chat-window">
             {chatHistory.length === 0 && (
-              <div className="chat-placeholder">
-                <p>Try asking:</p>
-                <span>"Can I substitute butter?"</span>
-                <span>"Is this spicy?"</span>
+              <div className="empty-chat">
+                <p>👋 Need help?</p>
+                <div className="suggestions">
+                  <span>"Can I substitute butter?"</span>
+                </div>
               </div>
             )}
             {chatHistory.map((msg, idx) => (
-              <div key={idx} className={`chat-bubble ${msg.role}`}>
-                {msg.content}
-              </div>
+              <div key={idx} className={`chat-bubble ${msg.role}`}>{msg.content}</div>
             ))}
-            {isChatting && <div className="chat-bubble assistant">Thinking...</div>}
+            {isChatting && <div className="chat-bubble assistant typing">Thinking...</div>}
             <div ref={chatEndRef} />
           </div>
           <form onSubmit={handleChatSubmit} className="chat-input-area">
             <input 
-              type="text" 
-              placeholder="Ask a question..." 
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
+              type="text" placeholder="Ask the Chef..." 
+              value={chatInput} onChange={(e) => setChatInput(e.target.value)}
             />
-            <button type="submit" disabled={isChatting}>➤</button>
+            <button type="submit" disabled={isChatting}><Send size={18}/></button>
           </form>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 
   return (
     <div className="smart-chef-container">
-      <header className="chef-header">
-        <h1>👨‍🍳 SmartChef AI</h1>
-        <p>Turn your fridge leftovers into a gourmet meal.</p>
-      </header>
-
       {!selectedRecipe && (
-        <form onSubmit={handleGenerate} className="chef-form">
-          <ImageUpload onIngredientsFound={handleImageIngredients} />
-          <textarea 
-            placeholder="Enter ingredients (e.g. Chicken, Spuds, Garlic)..." 
-            value={ingredients}
-            onChange={(e) => setIngredients(e.target.value)}
-          />
-          <div className="form-actions">
-            <button disabled={loading}>
-              {loading ? 'Chef is thinking...' : 'Find Recipes 🍳'}
-            </button>
-          </div>
-        </form>
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="hero-section">
+          <h1>Turn Leftovers into <span className="gradient-text">Masterpieces</span></h1>
+          <p>The AI-powered sous-chef that lives in your kitchen.</p>
+        </motion.div>
       )}
 
-      {error && <div className="error-msg">{error}</div>}
-      {selectedRecipe ? renderDetailView() : (recipeOptions.length > 0 && renderRecipeList())}
+      {!selectedRecipe && (
+        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="command-center">
+          <div className="input-container">
+            <textarea 
+              placeholder="Type ingredients (e.g. Chicken, Tomato) or click the camera..." 
+              value={ingredients}
+              onChange={(e) => setIngredients(e.target.value)}
+            />
+            <div className="input-actions">
+              <ImageUpload onIngredientsFound={handleImageIngredients} />
+            </div>
+          </div>
+          
+          <div className="action-row">
+            <button className="generate-btn full-width" onClick={handleGenerate} disabled={loading || !ingredients.trim()}>
+              {loading ? <Loader2 className="spin" /> : <><Sparkles size={18}/> Find Recipes</>}
+            </button>
+            {error && <span className="error-text">{error}</span>}
+          </div>
+        </motion.div>
+      )}
+
+      {!selectedRecipe && recipeOptions.length > 0 && (
+        <div className="results-grid">
+          {recipeOptions.map((recipe, idx) => (
+            <motion.div 
+              key={recipe.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} 
+              transition={{ delay: idx * 0.1 }} className="recipe-card" onClick={() => setSelectedRecipe(recipe)}
+            >
+              <div className={`card-badge ${recipe.is_ai ? 'ai' : 'db'}`}>
+                {recipe.is_ai ? <Sparkles size={12}/> : <BookOpen size={12}/>} {recipe.source}
+              </div>
+              <div className="card-image-placeholder"></div>
+              <div className="card-content">
+                <h3>{recipe.title}</h3>
+                {!recipe.is_ai && recipe.missing_ingredients.length > 0 ? (
+                  <div className="missing-pill">Missing {recipe.missing_ingredients.length} items</div>
+                ) : (
+                  <div className="ready-pill"><CheckCircle size={12}/> Ready to Cook</div>
+                )}
+                <div className="card-meta">
+                  <span><Clock size={14}/> {recipe.time_minutes}m</span>
+                  <span><Flame size={14}/> {recipe.calories}</span>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      <AnimatePresence>{selectedRecipe && renderDetailView()}</AnimatePresence>
     </div>
   );
 };
