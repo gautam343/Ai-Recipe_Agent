@@ -1,0 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+/* Keep the rest of your file, but ensure body uses the font */
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif; /* <--- Apply the new font */
+  background-color: #f8fafc;
+  -webkit-font-smoothing: antialiased;
+}
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}

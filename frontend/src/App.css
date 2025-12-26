@@ -1,0 +1,297 @@
+/* GLOBAL LAYOUT */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); /* Subtle gradient bg */
+  color: #1e293b;
+}
+
+/* NAVBAR / HEADER */
+.nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 40px;
+  background: white;
+  box-shadow: 0 2px 15px rgba(0,0,0,0.03);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  background: linear-gradient(45deg, #2563eb, #9333ea); /* Gradient Text */
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+}
+
+.nav-header button {
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  color: #64748b;
+  font-weight: 600;
+  margin-left: 20px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.nav-header button:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+/* LANDING PAGE HERO */
+.landing-content {
+  text-align: center;
+  margin-top: 100px;
+  padding: 0 20px;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.title {
+  font-size: 4rem;
+  margin-bottom: 10px;
+  color: #0f172a;
+  letter-spacing: -1px;
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  color: #64748b;
+  margin-bottom: 40px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* MODERN BUTTONS */
+.search-btn, .go-btn {
+  padding: 16px 32px;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.3); /* Soft Glow */
+}
+
+/* Primary Button (Blue) */
+.search-btn {
+  background: #2563eb;
+  color: white;
+}
+
+/* Secondary/AI Button (Purple) */
+.search-btn:nth-child(2), .ai-btn {
+  background: #7c3aed; /* Purple */
+  box-shadow: 0 10px 20px -5px rgba(124, 58, 237, 0.3);
+}
+
+.search-btn:hover, .go-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.15);
+}
+
+/* CHEF CONTAINER (The Card) */
+.chef-container {
+  max-width: 700px;
+  width: 90%;
+  margin: 40px auto;
+  background: white;
+  padding: 40px;
+  border-radius: 24px;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05); /* Deep soft shadow */
+  border: 1px solid #f1f5f9;
+}
+
+.chef-container h2 {
+  font-size: 2rem;
+  margin-top: 0;
+  color: #0f172a;
+}
+
+/* INPUTS */
+.input-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  background: #f8fafc;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  transition: border-color 0.2s;
+}
+
+.input-group:focus-within {
+  border-color: #2563eb;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.input-group input[type="text"] {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 1.1rem;
+  padding: 10px 15px;
+  outline: none;
+  font-family: 'Poppins', sans-serif;
+}
+
+.go-btn {
+  background: #2563eb;
+  color: white;
+  border-radius: 10px;
+  padding: 10px 20px;
+  box-shadow: none;
+}
+
+/* MENU GRID (The Selection Cards) */
+.menu-grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 30px;
+}
+
+.menu-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-card:hover {
+  border-color: #2563eb;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -10px rgba(37, 99, 235, 0.15);
+}
+
+/* BADGES */
+.badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+/* AI Badge = Purple gradient */
+.menu-card:nth-child(2) .badge, /* Target first card in list usually */
+.result-card .badge:contains('AI') { 
+   /* Note: CSS :contains doesn't exist, strictly relies on inline style or classes. 
+      For now we rely on the component logic or generic styling */
+   background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+   color: #7c3aed;
+}
+
+/* Fallback generic badge styling if needed */
+.badge {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+/* RECIPE DETAILS VIEW */
+.result-card {
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.result-card h3 {
+  font-size: 2.2rem;
+  margin: 10px 0;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.desc {
+  font-size: 1.1rem;
+  color: #475569;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.tag {
+  background: #f1f5f9;
+  color: #475569;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.steps {
+  counter-reset: step-counter;
+  list-style: none;
+  padding: 0;
+}
+
+.steps li {
+  position: relative;
+  padding-left: 50px;
+  margin-bottom: 20px;
+  color: #334155;
+  line-height: 1.6;
+}
+
+.steps li::before {
+  content: counter(step-counter);
+  counter-increment: step-counter;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 32px;
+  height: 32px;
+  background: #e0f2fe;
+  color: #0284c7;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 32px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+/* UTILS */
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #64748b;
+  font-weight: 600;
+  padding: 0;
+}
+.icon-btn:hover { color: #0f172a; }
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
