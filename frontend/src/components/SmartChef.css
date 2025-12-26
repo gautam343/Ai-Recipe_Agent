@@ -67,3 +67,30 @@
   .recipe-body { flex-direction: column; }
   .ingredients { border-right: none; border-bottom: 1px solid #eee; padding-bottom: 20px; }
 }
+
+/* Add to existing SmartChef.css */
+
+.save-btn {
+  background-color: #ff7675;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 20px;
+  margin-top: 15px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.save-btn:hover {
+  background-color: #d63031;
+  transform: translateY(-2px);
+}
+
+.save-btn:disabled {
+  background-color: #fab1a0;
+  cursor: not-allowed;
+  transform: none;
+}

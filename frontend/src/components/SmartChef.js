@@ -1,14 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ImageUpload from './ImageUpload';
 import './SmartChef.css';
 
 const SmartChef = () => {
   // --- STATE ---
   const [ingredients, setIngredients] = useState('');
-  // REMOVED: const [mealType, setMealType] = useState('Dinner'); 
   const [recipeOptions, setRecipeOptions] = useState([]);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false); // NEW: Saving state
 
   // Chat State
   const [chatInput, setChatInput] = useState('');
@@ -16,16 +17,20 @@ const SmartChef = () => {
   const [isChatting, setIsChatting] = useState(false);
   const chatEndRef = useRef(null);
 
-  // Auto-scroll chat
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatHistory]);
 
   // --- HANDLERS ---
+  const handleImageIngredients = (detectedIngredients) => {
+    setIngredients((prev) => 
+      prev.trim() ? `${prev}, ${detectedIngredients}` : detectedIngredients
+    );
+  };
+
   const handleGenerate = async (e) => {
     e.preventDefault();
     if (!ingredients.trim()) return;
-
     setLoading(true);
     setError('');
     setRecipeOptions([]);
@@ -36,12 +41,8 @@ const SmartChef = () => {
       const res = await fetch('http://localhost:5000/api/generate-recipe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // REMOVED: mealType from body
-        body: JSON.stringify({ 
-          ingredients: ingredients.split(',').map(i => i.trim())
-        }),
+        body: JSON.stringify({ ingredients: ingredients.split(',').map(i => i.trim()) }),
       });
-
       if (!res.ok) throw new Error('Failed to fetch recipes');
       const data = await res.json();
       setRecipeOptions(data);
@@ -49,6 +50,27 @@ const SmartChef = () => {
       setError('The Chef is confused. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // NEW: Save Handler
+  const handleSave = async () => {
+    if (!selectedRecipe) return;
+    setSaving(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/save-recipe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipe: selectedRecipe }),
+      });
+      
+      if (!res.ok) throw new Error('Save failed');
+      alert("Recipe Saved! Check 'Browse All' to see it.");
+    } catch (err) {
+      alert("Failed to save recipe. Is the database running?");
+      console.error(err);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -80,7 +102,7 @@ const SmartChef = () => {
     }
   };
 
-  // --- RENDER HELPERS (Views) ---
+  // --- VIEWS ---
   const renderRecipeList = () => (
     <div className="recipe-grid fade-in">
       <h3>Found {recipeOptions.length} Options for You:</h3>
@@ -120,6 +142,18 @@ const SmartChef = () => {
         <div className="recipe-content-panel">
           <div className="recipe-header">
             <h2>{selectedRecipe.title}</h2>
+            
+            {/* NEW: Save Button (Only for AI recipes that aren't saved yet) */}
+            {selectedRecipe.is_ai && (
+              <button 
+                onClick={handleSave} 
+                className="save-btn" 
+                disabled={saving}
+              >
+                {saving ? 'Saving...' : '❤️ Save to Cookbook'}
+              </button>
+            )}
+
             <div className="recipe-meta">
               <span>⏱️ {selectedRecipe.time_minutes} mins</span>
               <span>🔥 {selectedRecipe.calories} kcal</span>
@@ -157,12 +191,12 @@ const SmartChef = () => {
           </div>
         </div>
 
+        {/* Chat Panel */}
         <div className="chat-panel">
           <div className="chat-header">
             <h3>💬 Chef Assistant</h3>
             <p>Ask about specific steps or subs!</p>
           </div>
-          
           <div className="chat-window">
             {chatHistory.length === 0 && (
               <div className="chat-placeholder">
@@ -179,7 +213,6 @@ const SmartChef = () => {
             {isChatting && <div className="chat-bubble assistant">Thinking...</div>}
             <div ref={chatEndRef} />
           </div>
-
           <form onSubmit={handleChatSubmit} className="chat-input-area">
             <input 
               type="text" 
@@ -203,13 +236,13 @@ const SmartChef = () => {
 
       {!selectedRecipe && (
         <form onSubmit={handleGenerate} className="chef-form">
+          <ImageUpload onIngredientsFound={handleImageIngredients} />
           <textarea 
             placeholder="Enter ingredients (e.g. Chicken, Spuds, Garlic)..." 
             value={ingredients}
             onChange={(e) => setIngredients(e.target.value)}
           />
           <div className="form-actions">
-            {/* REMOVED: Select Dropdown */}
             <button disabled={loading}>
               {loading ? 'Chef is thinking...' : 'Find Recipes 🍳'}
             </button>
