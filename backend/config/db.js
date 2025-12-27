@@ -8,7 +8,13 @@ const sequelize = new Sequelize(
   {
     host: process.env.DB_HOST,
     dialect: process.env.DB_DIALECT,
-    logging: false, 
+    logging: false,
+    dialectOptions: {
+      ssl: {
+        require: true, // This tells Render we want a secure connection
+        rejectUnauthorized: false // This fixes the self-signed certificate error often seen on cloud DBs
+      }
+    }
   }
 );
 

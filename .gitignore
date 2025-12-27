@@ -15,3 +15,7 @@ npm-debug.log*
 yarn-debug.log*
 
 backend/data/RAW_recipes.csv
+
+coverage
+build
+dist
