@@ -1,10 +1,18 @@
-/* GLOBAL LAYOUT */
+/* Ensure the app takes full height and uses the theme background */
 .app-container {
   min-height: 100vh;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: 'Outfit', sans-serif;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); /* Subtle gradient bg */
-  color: #1e293b;
+}
+
+/* Content wrapper to handle fixed navbar spacing globally */
+.content-area {
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* NAVBAR / HEADER */

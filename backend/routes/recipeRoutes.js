@@ -1,13 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer'); // Import Multer
-const Recipe = require('../models/Recipe');
+const multer = require('multer');
+const { Recipe } = require('../models'); // Import from models/index.js to ensure relationship awareness
 const { findOrGenerateRecipe, chatWithRecipe } = require('../services/smartChefAgent');
 const { analyzeImage } = require('../services/visionAgent');
+const { protect } = require('../middleware/authMiddleware'); // Import Auth Middleware
 
+// Configure Multer
 const upload = multer({ storage: multer.memoryStorage() });
 
-// ROUTE 1: GET ALL RECIPES (For Browse All)
+// --- ROUTE 1: GET ALL RECIPES (Public) ---
 router.get('/recipes', async (req, res) => {
   try {
     const recipes = await Recipe.findAll();
@@ -18,45 +20,57 @@ router.get('/recipes', async (req, res) => {
   }
 });
 
-// --- NEW ROUTE: ANALYZE IMAGE ---
+// --- ROUTE 2: SAVE RECIPE (PROTECTED) ---
+router.post('/save-recipe', protect, async (req, res) => {
+  try {
+    const { recipe } = req.body;
+
+    // We now have access to req.user.id because of the 'protect' middleware
+    const newRecipe = await Recipe.create({
+      userId: req.user.id, // <--- Link recipe to the logged-in user
+      
+      name: recipe.title || "Untitled Recipe",
+      ingredients: recipe.ingredients_used,
+      instructions: recipe.instructions,
+      minutes: recipe.time_minutes || 15,
+      difficulty: recipe.difficulty,
+      description: recipe.description,
+      calories: recipe.calories
+    });
+
+    res.json({ message: "Recipe saved!", id: newRecipe.id });
+  } catch (error) {
+    console.error("Save Error:", error);
+    res.status(500).json({ message: "Failed to save recipe", error: error.message });
+  }
+});
+
+// --- ROUTE 3: ANALYZE IMAGE ---
 router.post('/analyze-image', upload.single('image'), async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No image uploaded" });
-    }
-
-    // Call Vision Agent
+    if (!req.file) return res.status(400).json({ message: "No image uploaded" });
     const ingredients = await analyzeImage(req.file.buffer, req.file.mimetype);
-    
     res.json({ ingredients });
-
   } catch (error) {
     console.error("Route Error:", error);
     res.status(500).json({ message: "Failed to analyze image" });
   }
 });
 
-// ROUTE 2: GENERATE RECIPES (AI Agent)
+// --- ROUTE 4: GENERATE RECIPE ---
 router.post('/generate-recipe', async (req, res) => {
   try {
-    // REMOVED: mealType from destructuring
     const { ingredients } = req.body;
-    
-    // Normalize input
     const userIngredients = ingredients.map(i => i.toLowerCase().trim());
-
-    // Call Agent (No 2nd argument needed anymore)
     const agentResponse = await findOrGenerateRecipe(userIngredients);
     
     if (!agentResponse.results || agentResponse.results.length === 0) {
       return res.status(500).json({ message: "No recipes found." });
     }
 
-    // Format Data for Frontend
     const formattedOptions = agentResponse.results.map((opt, index) => {
       const data = opt.data;
       const isAI = opt.source === 'ai_generated';
-
       let missing = [];
       let used = [];
 
@@ -64,11 +78,9 @@ router.post('/generate-recipe', async (req, res) => {
         used = data.ingredients; 
       } else {
         const recipeIngredients = data.ingredients || [];
-        
         used = recipeIngredients.filter(ing => 
           userIngredients.some(u => ing.toLowerCase().includes(u) || u.includes(ing.toLowerCase()))
         );
-
         missing = recipeIngredients.filter(ing => 
           !userIngredients.some(u => ing.toLowerCase().includes(u) || u.includes(ing.toLowerCase()))
         );
@@ -90,61 +102,27 @@ router.post('/generate-recipe', async (req, res) => {
     });
 
     res.json(formattedOptions);
-
   } catch (error) {
-    console.error("❌ Route Error:", error);
+    console.error("Route Error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 });
 
-// ROUTE 3: CHAT WITH RECIPE
+// --- ROUTE 5: CHAT WITH RECIPE ---
 router.post('/chat-recipe', async (req, res) => {
   try {
     const { recipe, question, history } = req.body;
-    
     const recipeContext = {
       title: recipe.title,
       ingredients: recipe.ingredients_used,
       instructions: recipe.instructions
     };
-
     const answer = await chatWithRecipe(recipeContext, question, history || []);
     res.json({ answer });
-
   } catch (error) {
     console.error("Chat Route Error:", error);
     res.status(500).json({ message: "Chat failed" });
   }
 });
-
-// --- NEW ROUTE: SAVE RECIPE ---
-router.post('/save-recipe', async (req, res) => {
-  try {
-    const { recipe } = req.body;
-
-    console.log("💾 Saving Recipe:", recipe.title); // Debug log
-
-    const newRecipe = await Recipe.create({
-      // FIX: Map 'title' from frontend to 'name' in database
-      name: recipe.title, 
-      
-      // Fallback: If 'title' is missing, try 'name', or default to "Untitled"
-      // name: recipe.title || recipe.name || "Untitled Recipe", 
-
-      ingredients: recipe.ingredients_used, 
-      instructions: recipe.instructions,
-      minutes: recipe.time_minutes || 15, // Ensure DB uses 'minutes' (check your model!)
-      difficulty: recipe.difficulty,
-      description: recipe.description,
-      calories: recipe.calories 
-    });
-
-    res.json({ message: "Recipe saved!", id: newRecipe.id });
-  } catch (error) {
-    console.error("Save Error:", error); // This will show you exactly what fails
-    res.status(500).json({ message: "Failed to save recipe", error: error.message });
-  }
-});
-
 
 module.exports = router;

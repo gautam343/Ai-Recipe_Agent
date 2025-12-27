@@ -4,32 +4,34 @@
   width: 100%;
   z-index: 1000;
   padding: 15px 0;
-  background: rgba(255, 255, 255, 0.85); /* Glass effect */
-  -webkit-backdrop-filter: blur(12px);
+  /* Glassmorphism background using your variables */
+  background: hsla(var(--background), 0.95);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid hsl(var(--border));
   transition: all 0.3s ease;
 }
 
 .nav-container {
-  max-width: 1100px;
-  margin: 0 auto;
+  /* UPDATED: Matches SmartChef and RecipeList width */
+  max-width: 1200px; 
+  margin: 0 auto; 
+  padding: 0 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
 }
 
 .logo {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #2d3436;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
   text-decoration: none;
-  letter-spacing: -0.5px;
 }
 
 .highlight {
-  color: #6C5CE7;
+  color: hsl(var(--primary));
 }
 
 .nav-links {
@@ -39,9 +41,8 @@
 
 .nav-item {
   text-decoration: none;
-  color: #636e72;
+  color: hsl(var(--muted-foreground));
   font-weight: 500;
-  font-size: 0.95rem;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -49,5 +50,83 @@
 }
 
 .nav-item:hover, .nav-item.active {
-  color: #6C5CE7;
+  color: hsl(var(--primary));
 }
+
+/* Auth Buttons */
+.login-btn {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  padding: 8px 20px;
+  border-radius: 20px; /* Rounded buttons */
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.login-btn:hover {
+  background: hsl(var(--primary) / 0.9);
+}
+
+.nav-user-group {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.username {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.logout-btn {
+  background: none;
+  color: hsl(var(--accent));
+  padding: 5px;
+  cursor: pointer;
+  border: none;
+}
+
+.logout-btn:hover {
+  color: hsl(var(--accent) / 0.8);
+}
+
+@media (max-width: 600px) {
+  .desktop-only { display: none; }
+}
+
+/* ... rest of your navbar styles ... */
+
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem; font-weight: 700; color: hsl(var(--foreground));
+  text-decoration: none;
+}
+.highlight { color: hsl(var(--primary)); }
+
+.nav-links { display: flex; gap: 30px; }
+
+.nav-item {
+  text-decoration: none; color: hsl(var(--muted-foreground));
+  font-weight: 500; display: flex; align-items: center; gap: 8px;
+  transition: color 0.2s;
+}
+.nav-item:hover, .nav-item.active { color: hsl(var(--primary)); }
+
+.login-btn {
+  background: hsl(var(--primary)); color: hsl(var(--primary-foreground));
+  padding: 8px 20px; border-radius: var(--radius);
+  font-weight: 500; display: flex; align-items: center; gap: 6px; text-decoration: none;
+  transition: all 0.2s;
+}
+.login-btn:hover { background: hsl(var(--primary) / 0.9); }
+.nav-user-group { display: flex; align-items: center; gap: 15px; }
+.username { font-weight: 600; color: hsl(var(--foreground)); display: flex; align-items: center; gap: 5px; }
+.logout-btn { background: none; color: hsl(var(--accent)); padding: 5px; cursor: pointer; }
+.logout-btn:hover { color: hsl(var(--accent) / 0.8); }

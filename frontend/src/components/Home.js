@@ -20,7 +20,7 @@ const Home = () => {
       <section className="hero">
         <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="hero-content">
           {/* UPDATE 1: Changed to Gemini 2.5 */}
-          <div className="badge-pill">🚀 Powered by Gemini 2.5</div>
+          <div className="badge-pill">Powered by Gemini 2.5</div>
           <h1>
             The Sous-Chef that <br />
             <span className="gradient-text">Lives in Your Pocket</span>

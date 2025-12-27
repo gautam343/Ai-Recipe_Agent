@@ -1,19 +1,27 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { 
   Send, Loader2, Sparkles, ChefHat, Flame, Clock, 
-  Save, BookOpen, ArrowLeft, CheckCircle, AlertTriangle 
+  Save, ArrowLeft, CheckCircle, Share2, Plus, X, Lightbulb, XCircle, BookOpen
 } from 'lucide-react';
 import toast from 'react-hot-toast'; 
+import { AuthContext } from '../context/AuthContext';
 import ImageUpload from './ImageUpload';
 import './SmartChef.css';
 
 const SmartChef = () => {
-  const [ingredients, setIngredients] = useState('');
+  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  // Input State
+  const [ingredientInput, setIngredientInput] = useState('');
+  const [ingredientsList, setIngredientsList] = useState([]);
+  
+  // Results State
   const [recipeOptions, setRecipeOptions] = useState([]);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
   // Chat State
@@ -26,19 +34,37 @@ const SmartChef = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatHistory]);
 
-  const handleImageIngredients = (detectedIngredients) => {
-    setIngredients((prev) => 
-      prev.trim() ? `${prev}, ${detectedIngredients}` : detectedIngredients
-    );
-    toast.success("Ingredients detected! 🍅");
+  // --- HANDLERS ---
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && ingredientInput.trim()) {
+      e.preventDefault();
+      addIngredient(ingredientInput.trim());
+    }
   };
 
-  const handleGenerate = async (e) => {
-    if (e) e.preventDefault();
-    if (!ingredients.trim()) return;
+  const addIngredient = (ing) => {
+    if (!ingredientsList.includes(ing)) {
+      setIngredientsList([...ingredientsList, ing]);
+    }
+    setIngredientInput('');
+  };
+
+  const removeIngredient = (ing) => {
+    setIngredientsList(ingredientsList.filter(item => item !== ing));
+  };
+
+  const handleImageIngredients = (detectedString) => {
+    const newItems = detectedString.split(',').map(i => i.trim());
+    const uniqueItems = newItems.filter(i => !ingredientsList.includes(i));
+    setIngredientsList([...ingredientsList, ...uniqueItems]);
+    toast.success(`Added ${uniqueItems.length} items from image! 📸`);
+  };
+
+  const handleGenerate = async () => {
+    if (ingredientsList.length === 0) return;
 
     setLoading(true);
-    setError('');
     setRecipeOptions([]);
     setSelectedRecipe(null);
     setChatHistory([]);
@@ -47,39 +73,69 @@ const SmartChef = () => {
       const res = await fetch('http://localhost:5000/api/generate-recipe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          ingredients: ingredients.split(',').map(i => i.trim()) 
-        }),
+        body: JSON.stringify({ ingredients: ingredientsList }),
       });
 
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
-      setRecipeOptions(data);
+      
+      if(Array.isArray(data)) {
+        setRecipeOptions(data);
+      } else {
+        setRecipeOptions(data.results || []); 
+      }
     } catch (err) {
-      setError('The Chef is confused. Please try again.');
+      console.error(err);
       toast.error("Chef couldn't find recipes. Try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSave = async () => {
+  const toggleIngredientStatus = (ingredient, isMissing) => {
     if (!selectedRecipe) return;
+    const newRecipe = JSON.parse(JSON.stringify(selectedRecipe));
+
+    if (isMissing) {
+      newRecipe.missing_ingredients = newRecipe.missing_ingredients.filter(i => i !== ingredient);
+      newRecipe.ingredients_used = [...newRecipe.ingredients_used, ingredient];
+      toast.success(`Marked ${ingredient} as found!`);
+    } else {
+      newRecipe.ingredients_used = newRecipe.ingredients_used.filter(i => i !== ingredient);
+      newRecipe.missing_ingredients = [...newRecipe.missing_ingredients, ingredient];
+    }
+    
+    setSelectedRecipe(newRecipe);
+  };
+
+  const handleSave = async () => {
+    if (!user) {
+      toast.error("Please login to save recipes!");
+      return navigate('/login');
+    }
     setSaving(true);
     try {
+      const token = localStorage.getItem('token');
       const res = await fetch('http://localhost:5000/api/save-recipe', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
         body: JSON.stringify({ recipe: selectedRecipe }),
       });
-      
       if (!res.ok) throw new Error('Save failed');
-      toast.success("Recipe Saved to Cookbook! 📖");
+      toast.success("Saved to Cookbook! 📖");
     } catch (err) {
-      toast.error("Failed to save recipe.");
+      toast.error("Failed to save.");
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(`Check out this recipe: ${selectedRecipe.title}`);
+    toast.success("Recipe name copied to clipboard!");
   };
 
   const handleChatSubmit = async (e) => {
@@ -120,40 +176,57 @@ const SmartChef = () => {
       
       <div className="split-layout">
         <div className="recipe-panel">
-          <div className="panel-header">
-            <div className="header-top">
+          <div className="recipe-header-card">
+            <div className="header-content">
               <h2>{selectedRecipe.title}</h2>
-              {selectedRecipe.is_ai && (
-                <button onClick={handleSave} className="save-btn" disabled={saving}>
-                  <Save size={16} /> {saving ? 'Saving...' : 'Save'}
-                </button>
-              )}
+              <p className="recipe-subtitle">{selectedRecipe.description}</p>
+              <div className="meta-pills">
+                <span><Clock size={16}/> {selectedRecipe.time_minutes} min</span>
+                <span><Flame size={16}/> {selectedRecipe.calories} kcal</span>
+                <span><ChefHat size={16}/> {selectedRecipe.difficulty}</span>
+              </div>
             </div>
-            <div className="stats-row">
-              <span className="stat"><Clock size={16} /> {selectedRecipe.time_minutes} min</span>
-              <span className="stat"><Flame size={16} /> {selectedRecipe.calories} kcal</span>
-              <span className="stat badge">{selectedRecipe.difficulty}</span>
-            </div>
-            <p className="desc">{selectedRecipe.description}</p>
+            <div className="header-icon"><ChefHat size={60} strokeWidth={1} /></div>
           </div>
 
           <div className="recipe-body">
             <div className="section">
-              <h3><BookOpen size={18} /> Ingredients</h3>
-              <ul className="ingredient-list">
+              <h3>Ingredients <span className="sub-hint">(Click to toggle)</span></h3>
+              <ul className="interactive-list">
                 {selectedRecipe.ingredients_used.map((ing, i) => (
-                  <li key={i} className="found"><CheckCircle size={14} /> {ing}</li>
+                  <li key={`used-${i}`} className="ing-item found" onClick={() => toggleIngredientStatus(ing, false)}>
+                    <CheckCircle className="icon-status" size={18} /> <span>{ing}</span>
+                  </li>
                 ))}
                 {selectedRecipe.missing_ingredients.map((ing, i) => (
-                  <li key={i} className="missing"><AlertTriangle size={14} /> {ing}</li>
+                  <li key={`missing-${i}`} className="ing-item missing" onClick={() => toggleIngredientStatus(ing, true)}>
+                    <XCircle className="icon-status" size={18} /> <span>{ing}</span>
+                  </li>
                 ))}
               </ul>
             </div>
             <div className="section">
-              <h3><ChefHat size={18} /> Instructions</h3>
-              <ol className="instruction-list">
-                {selectedRecipe.instructions.map((step, i) => <li key={i}>{step}</li>)}
-              </ol>
+              <h3>Instructions</h3>
+              <div className="steps-container">
+                {selectedRecipe.instructions.map((step, i) => (
+                  <div key={i} className="step-item">
+                    <div className="step-number">{i + 1}</div>
+                    <p>{step}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="chef-tip-box">
+              <Lightbulb className="tip-icon" size={20} />
+              <div><strong>Chef's Tip:</strong><p>Taste as you go!</p></div>
+            </div>
+            <div className="action-footer">
+              {selectedRecipe.is_ai && (
+                <button onClick={handleSave} className="action-btn primary" disabled={saving}>
+                  <Save size={18} /> {saving ? 'Saving...' : 'Save Recipe'}
+                </button>
+              )}
+              <button onClick={handleShare} className="action-btn secondary"><Share2 size={18} /> Share</button>
             </div>
           </div>
         </div>
@@ -168,7 +241,7 @@ const SmartChef = () => {
               <div className="empty-chat">
                 <p>👋 Need help?</p>
                 <div className="suggestions">
-                  <span>"Can I substitute butter?"</span>
+                  <span onClick={() => setChatInput("Can I substitute something?")}>"Substitutions?"</span>
                 </div>
               </div>
             )}
@@ -180,7 +253,7 @@ const SmartChef = () => {
           </div>
           <form onSubmit={handleChatSubmit} className="chat-input-area">
             <input 
-              type="text" placeholder="Ask the Chef..." 
+              type="text" placeholder="Ask about this recipe..." 
               value={chatInput} onChange={(e) => setChatInput(e.target.value)}
             />
             <button type="submit" disabled={isChatting}><Send size={18}/></button>
@@ -194,55 +267,78 @@ const SmartChef = () => {
     <div className="smart-chef-container">
       {!selectedRecipe && (
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="hero-section">
-          <h1>Turn Leftovers into <span className="gradient-text">Masterpieces</span></h1>
-          <p>The AI-powered sous-chef that lives in your kitchen.</p>
+          <h1>What's in your <span className="gradient-text">Kitchen?</span></h1>
+          <p>Add ingredients you have on hand and we'll create a recipe for you.</p>
         </motion.div>
       )}
 
       {!selectedRecipe && (
         <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="command-center">
-          <div className="input-container">
-            <textarea 
-              placeholder="Type ingredients (e.g. Chicken, Tomato) or click the camera..." 
-              value={ingredients}
-              onChange={(e) => setIngredients(e.target.value)}
+          <div className="input-wrapper">
+            <input 
+              className="tag-input"
+              type="text"
+              placeholder="Type ingredients (e.g. Chicken)..." 
+              value={ingredientInput}
+              onChange={(e) => setIngredientInput(e.target.value)}
+              onKeyDown={handleKeyDown}
             />
-            <div className="input-actions">
-              <ImageUpload onIngredientsFound={handleImageIngredients} />
+            <div className="camera-trigger"><ImageUpload onIngredientsFound={handleImageIngredients} /></div>
+          </div>
+          <div className="quick-add">
+            <span>Quick add:</span>
+            {['Chicken', 'Rice', 'Tomatoes', 'Onion', 'Garlic'].map(item => (
+              <button key={item} onClick={() => addIngredient(item)} className="pill-btn">{item} <Plus size={12}/></button>
+            ))}
+          </div>
+          {ingredientsList.length > 0 && (
+            <div className="tags-container">
+              <div className="tags-list">
+                {ingredientsList.map((ing, i) => (
+                  <motion.span layout key={i} className="ingredient-tag">
+                    {ing} <button onClick={() => removeIngredient(ing)}><X size={12}/></button>
+                  </motion.span>
+                ))}
+              </div>
             </div>
-          </div>
-          
-          <div className="action-row">
-            <button className="generate-btn full-width" onClick={handleGenerate} disabled={loading || !ingredients.trim()}>
-              {loading ? <Loader2 className="spin" /> : <><Sparkles size={18}/> Find Recipes</>}
-            </button>
-            {error && <span className="error-text">{error}</span>}
-          </div>
+          )}
+          <button className="generate-btn full-width" onClick={handleGenerate} disabled={loading || ingredientsList.length === 0}>
+            {loading ? <Loader2 className="spin" /> : <><ChefHat size={18}/> Generate Recipe</>}
+          </button>
         </motion.div>
       )}
 
+      {/* --- RESULTS GRID WITH SOURCE LABELS --- */}
       {!selectedRecipe && recipeOptions.length > 0 && (
         <div className="results-grid">
           {recipeOptions.map((recipe, idx) => (
             <motion.div 
-              key={recipe.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} 
-              transition={{ delay: idx * 0.1 }} className="recipe-card" onClick={() => setSelectedRecipe(recipe)}
+              key={recipe.id} 
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} 
+              transition={{ delay: idx * 0.1 }} 
+              className="recipe-card-clean" 
+              onClick={() => setSelectedRecipe(recipe)}
             >
-              <div className={`card-badge ${recipe.is_ai ? 'ai' : 'db'}`}>
-                {recipe.is_ai ? <Sparkles size={12}/> : <BookOpen size={12}/>} {recipe.source}
-              </div>
-              <div className="card-image-placeholder"></div>
-              <div className="card-content">
-                <h3>{recipe.title}</h3>
-                {!recipe.is_ai && recipe.missing_ingredients.length > 0 ? (
-                  <div className="missing-pill">Missing {recipe.missing_ingredients.length} items</div>
-                ) : (
-                  <div className="ready-pill"><CheckCircle size={12}/> Ready to Cook</div>
-                )}
-                <div className="card-meta">
-                  <span><Clock size={14}/> {recipe.time_minutes}m</span>
-                  <span><Flame size={14}/> {recipe.calories}</span>
+              <div className="clean-card-header">
+                <div className="header-top-row">
+                  {/* SOURCE BADGE ADDED HERE */}
+                  <span className={`source-badge ${recipe.is_ai ? 'ai-source' : 'db-source'}`}>
+                    {recipe.is_ai ? <><Sparkles size={10} fill="currentColor"/> AI Chef Special</> : <><BookOpen size={10}/> Cookbook Match</>}
+                  </span>
+                  <span className="clean-time-badge">⏱️ {recipe.time_minutes}m</span>
                 </div>
+                <h3>{recipe.title}</h3>
+              </div>
+              
+              <p className="clean-card-desc">
+                {recipe.description ? recipe.description.slice(0, 100) + '...' : "A delicious recipe based on your ingredients."}
+              </p>
+              
+              <div className="clean-card-footer">
+                <span className={`clean-diff-tag ${recipe.difficulty ? recipe.difficulty.toLowerCase() : 'medium'}`}>
+                  {recipe.difficulty || 'Medium'}
+                </span>
+                <span className="clean-view-link">View Recipe &rarr;</span>
               </div>
             </motion.div>
           ))}
