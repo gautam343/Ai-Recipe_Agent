@@ -9,7 +9,7 @@ const sequelize = new Sequelize(
     host: process.env.DB_HOST,
     dialect: process.env.DB_DIALECT,
     logging: false,
-    dialectOptions: {
+    dialectOptions: process.env.DB_HOST === 'postgres' ? {} : {
       ssl: {
         require: true, // This tells Render we want a secure connection
         rejectUnauthorized: false // This fixes the self-signed certificate error often seen on cloud DBs

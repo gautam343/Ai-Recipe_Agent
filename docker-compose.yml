@@ -1,8 +1,26 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: nebula9_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     build: ./backend
+    ports:
+      - "5000:5000"  # <--- This is the bridge. It connects localhost:5000 to container:5000
     environment:
       - PORT=${PORT}
       - DB_HOST=${DB_HOST}
@@ -10,10 +28,24 @@ services:
       - DB_PASS=${DB_PASS}
       - DB_NAME=${DB_NAME}
       - DB_DIALECT=${DB_DIALECT}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
       - JWT_SECRET=${JWT_SECRET}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
 
   frontend:
-    build: ./frontend
-    environment:
-      - REACT_APP_API_URL=${REACT_APP_API_URL}
+    build:
+      context: ./frontend
+      # 2. Add the args section here
+      args:
+        REACT_APP_API_URL: http://backend:5000/api
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  postgres_data:

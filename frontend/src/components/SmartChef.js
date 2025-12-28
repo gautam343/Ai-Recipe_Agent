@@ -70,7 +70,7 @@ const SmartChef = () => {
     setChatHistory([]);
 
     try {
-      const res = await fetch('http://localhost:5000/api/generate-recipe', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/generate-recipe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ingredients: ingredientsList }),
@@ -116,7 +116,7 @@ const SmartChef = () => {
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/save-recipe', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/save-recipe`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -147,7 +147,7 @@ const SmartChef = () => {
     setIsChatting(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/chat-recipe', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/chat-recipe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

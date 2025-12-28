@@ -13,7 +13,7 @@ const RecipeList = () => {
 
   const fetchRecipes = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/recipes');
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/recipes`);
       if (!response.ok) throw new Error('Failed to fetch recipes');
       const data = await response.json();
       setRecipes(data);
