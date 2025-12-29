@@ -246,12 +246,48 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Render** for reliable cloud hosting
 - **Open source community** for amazing tools and libraries
 
-## 📞 Support
+## � Project Assumptions
 
-If you encounter any issues or have questions:
-- Open an issue on GitHub
-- Check the troubleshooting section in our wiki
-- Contact the maintainers
+While developing and deploying this AI Recipe Agent, the following assumptions were made:
+
+### Technical Assumptions
+- **Node.js Version**: Compatible with Node.js v16+ (as specified in package.json engines)
+- **Database Compatibility**: PostgreSQL is the primary database; other databases may require configuration changes
+- **API Rate Limits**: Google Gemini API has reasonable rate limits for the free tier usage
+- **File Upload Limits**: Image uploads are within typical web application limits (handled by Multer)
+- **Browser Compatibility**: Modern browsers with ES6+ support (Chrome, Firefox, Safari, Edge)
+
+### Deployment Assumptions
+- **Render Free Tier**: Sufficient for development and light production use
+- **GitHub Integration**: Repository remains public and connected to Render services
+- **Environment Security**: Sensitive credentials are properly configured in Render environment variables
+- **Database Persistence**: Render PostgreSQL maintains data between deployments
+
+### Feature Assumptions
+- **AI Accuracy**: Google Gemini provides reliable food image analysis and recipe generation
+- **User Authentication**: JWT tokens provide sufficient security for user sessions
+- **Recipe Data**: CSV seed data contains valid recipe information
+- **Image Processing**: Uploaded images are valid food photos in common formats (JPG, PNG)
+
+### Development Assumptions
+- **Local Environment**: Docker and Docker Compose are available for local development
+- **API Testing**: Postman or similar tools for testing backend endpoints
+- **Git Workflow**: Standard Git practices with main branch for production
+- **Package Management**: npm for dependency management
+
+### Security Assumptions
+- **CORS Policy**: Current CORS configuration is sufficient for the application domains
+- **Input Validation**: Basic validation prevents common security issues
+- **API Keys**: Google Gemini API key has appropriate permissions and quota
+- **Environment Variables**: All sensitive data is stored in environment variables, not hardcoded
+
+### Performance Assumptions
+- **Response Times**: AI processing and database queries complete within reasonable time limits
+- **Concurrent Users**: Application handles typical user loads for a development/demo project
+- **Image Sizes**: Uploaded images are optimized for web delivery
+- **Database Queries**: Sequelize models and queries are optimized for the current data volume
+
+If any of these assumptions change, the application may require adjustments to maintain optimal performance and security.
 
 ---
 
