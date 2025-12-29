@@ -145,22 +145,52 @@ curl -X POST http://localhost:5000/api/vision/analyze \
 
 ### Render Deployment
 
-1. **Frontend (Static Site):**
-   - Connect GitHub repository
-   - Set build command: `npm run build`
-   - Set publish directory: `build`
-   - Add environment variable: `REACT_APP_API_URL=https://your-backend-url.onrender.com/api`
+Your application is deployed on Render with the following live URLs:
+- **Frontend**: https://ai-recipe-agent.onrender.com
+- **Backend API**: https://nebula9-backend.onrender.com
 
-2. **Backend (Web Service):**
-   - Connect GitHub repository
-   - Set root directory: `backend`
-   - Set build command: `npm install`
-   - Set start command: `node server.js`
-   - Configure environment variables (database, API keys, etc.)
+#### Frontend Setup (Static Site)
+1. **Create Static Site** in Render Dashboard
+2. **Connect Repository**: `gautam343/Ai-Recipe_Agent`
+3. **Build Settings**:
+   - Build Command: `npm run build`
+   - Publish Directory: `build`
+4. **Environment Variables**:
+   ```
+   REACT_APP_API_URL=https://nebula9-backend.onrender.com/api
+   ```
+5. **Deploy**: Automatic on push to `main` branch
 
-3. **Database:**
-   - Use Render PostgreSQL
-   - Update connection settings in backend environment
+#### Backend Setup (Web Service)
+1. **Create Web Service** in Render Dashboard
+2. **Connect Repository**: `gautam343/Ai-Recipe_Agent`
+3. **Service Settings**:
+   - Root Directory: `backend`
+   - Runtime: Node
+   - Build Command: `npm install`
+   - Start Command: `node server.js`
+4. **Environment Variables**:
+   ```env
+   DB_DIALECT=postgres
+   DB_HOST=your_render_postgres_host
+   DB_NAME=your_database_name
+   DB_PASS=your_database_password
+   DB_USER=your_database_user
+   GEMINI_API_KEY=your_gemini_api_key
+   JWT_SECRET=your_secure_jwt_secret
+   ```
+5. **Database**: Create Render PostgreSQL database and use its connection details
+
+#### Database Setup
+1. **Create PostgreSQL** database in Render
+2. **Note Connection Details** (host, database name, user, password)
+3. **Update Backend Environment** with these credentials
+4. **Database Migration**: Runs automatically on first deployment via Sequelize sync
+
+### Deployment Workflow
+- **Automatic**: Push to `main` branch triggers both frontend and backend redeployment
+- **Manual**: Use Render dashboard for manual deploys
+- **Monitoring**: Check logs in Render dashboard for both services
 
 ### Environment Variables for Production
 ```env
